@@ -4,13 +4,15 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 import joblib
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score, confusion_matrix
 import warnings
 warnings.filterwarnings('ignore')
 
 # ১. পেজ কনফিগারেশন
 st.set_page_config(page_title="Smart Crop Recommendation", layout="wide")
 
-# ২. ডেটা ও মডেল লোড করা (Cache ব্যবহার করা হচ্ছে যাতে অ্যাপ ফাস্ট হয়)
+# ২. ডেটা ও মডেল লোড করা
 @st.cache_resource
 def load_data_and_models():
     model = joblib.load('best_rf_model.pkl')
@@ -44,7 +46,6 @@ with col1:
 with col2:
     st.header("🎯 Model Recommendation")
     
-    # প্রেডিক্ট বাটনে ক্লিক করলে কী হবে
     if predict_btn:
         input_data = np.array([[N, P, K, temp, humidity, ph, rainfall]])
         scaled_input = scaler.transform(input_data)
@@ -52,8 +53,8 @@ with col2:
         st.success(f"🌟 The most suitable crop for this condition is: **{prediction.upper()}** 🌟")
     
     st.header("📈 Analytics Dashboard")
-    # গ্রাফগুলোকে আলাদা ট্যাবে দেখানোর জন্য
-    tab1, tab2 = st.tabs(["Feature Correlation", "Feature Importance"])
+    # চারটি আলাদা ট্যাব তৈরি করা হলো
+    tab1, tab2, tab3, tab4 = st.tabs(["Feature Correlation", "Feature Importance", "Model Performance", "Data Overview"])
     
     with tab1:
         fig1, ax1 = plt.subplots(figsize=(8, 5))
@@ -66,3 +67,32 @@ with col2:
         feature_importances = pd.Series(model.feature_importances_, index=X_columns).sort_values(ascending=False)
         sns.barplot(x=feature_importances, y=feature_importances.index, palette='viridis', ax=ax2)
         st.pyplot(fig2)
+        
+    with tab3:
+        st.subheader("Model Accuracy & Evaluation")
+        
+        # ব্যাকগ্রাউন্ডে দ্রুত একুরেসি ক্যালকুলেট করার লজিক
+        X = df.drop('label', axis=1)
+        y = df['label']
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+        X_test_scaled = scaler.transform(X_test)
+        y_pred = model.predict(X_test_scaled)
+        
+        acc = accuracy_score(y_test, y_pred)
+        
+        # একুরেসি বড় করে দেখানোর জন্য Streamlit Metric
+        st.metric(label="Random Forest Accuracy", value=f"{acc * 100:.2f}%")
+        
+        st.markdown("**Confusion Matrix:**")
+        fig3, ax3 = plt.subplots(figsize=(10, 6))
+        cm = confusion_matrix(y_test, y_pred)
+        sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', ax=ax3)
+        plt.xlabel("Predicted")
+        plt.ylabel("Actual")
+        st.pyplot(fig3)
+        
+    with tab4:
+        st.subheader("Dataset Quick Look")
+        st.markdown("Here are the first 10 rows of the dataset used to train the model:")
+        # ডেটাসেট সুন্দর একটি টেবিলে দেখাবে
+        st.dataframe(df.head(10), use_container_width=True)

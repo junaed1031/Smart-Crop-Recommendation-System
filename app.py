@@ -90,8 +90,8 @@ with col2:
         sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', 
                     xticklabels=class_labels, yticklabels=class_labels, ax=ax3)
         
-        plt.xlabel("Predicted Crop (মডেল যা প্রেডিক্ট করেছে)")
-        plt.ylabel("Actual Crop (আসল ফসল)")
+        plt.xlabel("Predicted Crop")
+        plt.ylabel("Actual Crop")
         plt.xticks(rotation=45, ha='right') # নামগুলো বাঁকা করে সুন্দরভাবে দেখানোর জন্য
         st.pyplot(fig3)
         

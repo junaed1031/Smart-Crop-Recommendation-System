@@ -79,16 +79,20 @@ with col2:
         y_pred = model.predict(X_test_scaled)
         
         acc = accuracy_score(y_test, y_pred)
-        
-        # একুরেসি বড় করে দেখানোর জন্য Streamlit Metric
         st.metric(label="Random Forest Accuracy", value=f"{acc * 100:.2f}%")
         
         st.markdown("**Confusion Matrix:**")
-        fig3, ax3 = plt.subplots(figsize=(10, 6))
+        fig3, ax3 = plt.subplots(figsize=(12, 8))
         cm = confusion_matrix(y_test, y_pred)
-        sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', ax=ax3)
-        plt.xlabel("Predicted")
-        plt.ylabel("Actual")
+        
+        # এখানে ফসলের নামগুলো লেবেল হিসেবে দেওয়া হলো
+        class_labels = model.classes_
+        sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', 
+                    xticklabels=class_labels, yticklabels=class_labels, ax=ax3)
+        
+        plt.xlabel("Predicted Crop (মডেল যা প্রেডিক্ট করেছে)")
+        plt.ylabel("Actual Crop (আসল ফসল)")
+        plt.xticks(rotation=45, ha='right') # নামগুলো বাঁকা করে সুন্দরভাবে দেখানোর জন্য
         st.pyplot(fig3)
         
     with tab4:

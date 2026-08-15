@@ -68,6 +68,9 @@ with col2:
         sns.barplot(x=feature_importances, y=feature_importances.index, palette='viridis', ax=ax2)
         st.pyplot(fig2)
         
+    # একদম উপরে ইম্পোর্ট সেকশনে এটি নিশ্চিত করুন:
+# from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
+
     with tab3:
         st.subheader("Model Accuracy & Evaluation")
         
@@ -78,21 +81,32 @@ with col2:
         X_test_scaled = scaler.transform(X_test)
         y_pred = model.predict(X_test_scaled)
         
+        # একুরেসি মেট্রিক
         acc = accuracy_score(y_test, y_pred)
-        st.metric(label="Random Forest Accuracy", value=f"{acc * 100:.2f}%")
+        st.metric(label="Random Forest Overall Accuracy", value=f"{acc * 100:.2f}%")
         
-        st.markdown("**Confusion Matrix:**")
+        st.markdown("---") # একটি ডিভাইডার লাইন
+        
+        # Classification Report শো করানো
+        st.markdown("**📊 Detailed Classification Report:**")
+        from sklearn.metrics import classification_report
+        report_text = classification_report(y_test, y_pred)
+        st.code(report_text, language='text') # Colab এর মত কালো বক্সে দেখাবে
+        
+        st.markdown("---")
+        
+        # Confusion Matrix
+        st.markdown("**🧮 Confusion Matrix:**")
         fig3, ax3 = plt.subplots(figsize=(12, 8))
         cm = confusion_matrix(y_test, y_pred)
         
-        # এখানে ফসলের নামগুলো লেবেল হিসেবে দেওয়া হলো
         class_labels = model.classes_
         sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', 
                     xticklabels=class_labels, yticklabels=class_labels, ax=ax3)
         
         plt.xlabel("Predicted Crop")
         plt.ylabel("Actual Crop")
-        plt.xticks(rotation=45, ha='right') # নামগুলো বাঁকা করে সুন্দরভাবে দেখানোর জন্য
+        plt.xticks(rotation=45, ha='right')
         st.pyplot(fig3)
         
     with tab4:
